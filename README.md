@@ -84,18 +84,52 @@ Completed tasks:
 
 ## 🧪 Testing PawPal+
 
+The tests live in `tests/test_pawpal.py` and use **pytest**. Run them from the project folder (with your virtual environment active):
+
 ```bash
 # Run the full test suite:
 pytest
 
-# Run with coverage:
+# See each test's name and result:
+pytest -v
+
+# Optional: run with coverage (first install the plugin with `pip install pytest-cov`):
 pytest --cov
 ```
 
-Sample test output:
+`pytest.ini` tells pytest where the tests are and lets them import `pawpal_system`, so no extra setup is needed.
+
+**What the tests cover (11 tests):**
+
+| Area | What is checked |
+|------|-----------------|
+| Basics | `mark_complete()` sets `completed` to `True`; `add_task()` adds the task to the pet |
+| Sorting by time | Tasks come back earliest first; tasks with no set time go last |
+| Recurring tasks | Completing a daily task adds an unfinished copy due 1 day later; weekly adds one due 7 days later; a one-time task adds nothing; tomorrow's copy is not put in today's plan |
+| Conflict detection | Overlapping tasks (08:00 for 30 min and 08:15) are flagged; back-to-back tasks (08:00 for 30 min, then 08:30) are **not**; tasks with no set time are never flagged |
+
+Sample test output (`pytest -v`):
 
 ```
-2 passed in 0.00s
+============================= test session starts ==============================
+rootdir: <project folder>
+configfile: pytest.ini
+testpaths: tests
+collecting ... collected 11 items
+
+tests/test_pawpal.py::test_mark_complete_sets_completed_to_true PASSED   [  9%]
+tests/test_pawpal.py::test_add_task_increases_pet_task_count PASSED      [ 18%]
+tests/test_pawpal.py::test_sort_by_time_orders_tasks_earliest_first PASSED [ 27%]
+tests/test_pawpal.py::test_sort_by_time_puts_tasks_without_time_last PASSED [ 36%]
+tests/test_pawpal.py::test_completing_daily_task_adds_copy_for_next_day PASSED [ 45%]
+tests/test_pawpal.py::test_completing_weekly_task_adds_copy_for_next_week PASSED [ 54%]
+tests/test_pawpal.py::test_completing_one_time_task_does_not_repeat PASSED [ 63%]
+tests/test_pawpal.py::test_next_daily_task_is_not_in_todays_plan PASSED  [ 72%]
+tests/test_pawpal.py::test_overlapping_tasks_are_flagged_as_conflict PASSED [ 81%]
+tests/test_pawpal.py::test_back_to_back_tasks_do_not_conflict PASSED     [ 90%]
+tests/test_pawpal.py::test_tasks_without_time_are_never_in_conflict PASSED [100%]
+
+============================== 11 passed in 0.01s ==============================
 ```
 
 ## 📐 Smarter Scheduling
