@@ -13,6 +13,7 @@ classDiagram
         +list~Task~ tasks
         +add_task(task) None
         +remove_task(title) None
+        +complete_task(task) Optional~Task~
     }
 
     class Task {
@@ -20,8 +21,14 @@ classDiagram
         +int duration_minutes
         +str priority
         +bool completed
+        +str time
+        +str frequency
+        +date due_date
         +mark_complete() None
         +priority_value() int
+        +start_minutes() Optional~int~
+        +end_minutes() Optional~int~
+        +next_occurrence() Optional~Task~
     }
 
     class Scheduler {
@@ -29,7 +36,10 @@ classDiagram
         +list~Task~ plan
         +list~Task~ skipped
         +sort_tasks(tasks) list~Task~
+        +sort_by_time(tasks) list~Task~
+        +filter_tasks(pet_name, completed) list~Task~
         +generate_plan() list~Task~
+        +detect_conflicts(tasks) list~str~
         +explain_plan() str
     }
 

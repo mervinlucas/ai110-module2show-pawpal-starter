@@ -55,18 +55,31 @@ Sample output (one owner with 60 minutes, two pets, five tasks):
 ```
 Today's Schedule for Jordan (60 min available)
 ==================================================
-1. Give medicine - 5 min [priority: high]
-2. Feeding - 10 min [priority: high]
-3. Morning walk - 30 min [priority: high]
-4. Brushing - 15 min [priority: low]
+07:30  Feeding - 10 min [priority: high]
+08:00  Morning walk - 30 min [priority: high]
+08:15  Give medicine - 5 min [priority: high]
+18:00  Brushing - 15 min [priority: low]
 
 Why this plan:
-Added 'Give medicine' (high priority, 5 min).
-Added 'Feeding' (high priority, 10 min).
-Added 'Morning walk' (high priority, 30 min).
-Added 'Brushing' (low priority, 15 min).
+Added 'Feeding' at 07:30 (high priority, 10 min).
+Added 'Morning walk' at 08:00 (high priority, 30 min).
+Added 'Give medicine' at 08:15 (high priority, 5 min).
+Added 'Brushing' at 18:00 (low priority, 15 min).
 Skipped 'Play time' (20 min): not enough time left.
 Total time used: 60 of 60 min.
+
+⚠️  Conflicts:
+  - 'Morning walk' at 08:00 overlaps with 'Give medicine' at 08:15.
+
+Mochi's tasks (sorted by time):
+  07:30  Feeding
+  08:15  Give medicine
+  17:00  Play time
+
+Completed 'Morning walk'. Next one is due 2026-10-31.
+
+Completed tasks:
+  Morning walk
 ```
 
 ## 🧪 Testing PawPal+
@@ -87,14 +100,18 @@ Sample test output:
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
+PawPal+ goes beyond a simple to-do list. All of this logic lives in `pawpal_system.py` and is used by both `main.py` and the Streamlit app.
 
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `Scheduler.sort_tasks()`, `Scheduler.sort_by_time()` | Tasks are **chosen** by priority (high first, then shortest), then the final plan is **shown** in time order. Tasks with no set time go last. |
+| Filtering | `Scheduler.filter_tasks(pet_name, completed)` | Show tasks for one pet, only unfinished tasks, only finished tasks, or any mix. `None` means "any". `generate_plan()` also skips tasks that are done or not due until a later day. Tasks are skipped if time runs out. |
+| Conflict handling | `Scheduler.detect_conflicts()`, `Task.start_minutes()`, `Task.end_minutes()` | Compares every pair of timed tasks and returns a warning when two overlap (e.g. a 30-min walk at 08:00 and meds at 08:15). Back-to-back tasks (08:00–08:30 then 08:30) are **not** a conflict. Conflicts are warnings only, so the plan is still shown. |
+| Recurring tasks | `Task.next_occurrence()`, `Pet.complete_task()` | A task can repeat `"once"`, `"daily"`, or `"weekly"`. Completing a daily/weekly task automatically adds a fresh copy due 1 or 7 days later. |
+
+**New `Task` fields:** `time` (`"HH:MM"`, optional), `frequency` (`"once"` / `"daily"` / `"weekly"`), and `due_date` (defaults to today).
+
+**In the Streamlit app:** the task form now has a start time and a "Repeats" option; the task list can be filtered by pet and status and is sorted by time; a "Complete a Task" section marks tasks done (and schedules the next one for repeating tasks); and the generated schedule shows any time conflicts as warnings.
 
 ## 📸 Demo Walkthrough
 

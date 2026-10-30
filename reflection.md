@@ -26,6 +26,10 @@
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
 
+The scheduler picks tasks **greedily by priority**. It sorts tasks from high to low priority (shortest first when priorities tie) and adds each one if it still fits in the owner's available time. It does not search every possible combination for the "best" use of time. As a result, a lower-priority task can sometimes beat a higher-priority one. In my demo, "Play time" (medium, 20 min) was skipped but "Brushing" (low, 15 min) was added, because only 15 minutes were left after the high-priority tasks. Checking every combination would fill time a little better in some cases, but the number of combinations grows very quickly. That approach would also be harder to explain to the owner. With the greedy approach, the most important tasks (meds, feeding) are always considered first, and `explain_plan()` can give a simple reason for every decision.
+
+A second tradeoff is in **conflict detection**. `detect_conflicts()` compares every pair of timed tasks, which takes about n² checks. Sorting by start time first and only comparing neighbors would be faster. But an owner will only have a handful of tasks per day, so the speed difference doesn't matter here, and the nested loop is easier to read and test. Conflicts are also only **warnings**: the scheduler doesn't move tasks around automatically. An owner might really be able to give meds during a walk, so I decided they should make that call rather than the app.
+
 ---
 
 ## 3. AI Collaboration
