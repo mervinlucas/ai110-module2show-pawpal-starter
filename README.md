@@ -145,16 +145,45 @@ PawPal+ goes beyond a simple to-do list. All of this logic lives in `pawpal_syst
 
 **New `Task` fields:** `time` (`"HH:MM"`, optional), `frequency` (`"once"` / `"daily"` / `"weekly"`), and `due_date` (defaults to today).
 
-**In the Streamlit app:** the task form now has a start time and a "Repeats" option; the task list can be filtered by pet and status and is sorted by time; a "Complete a Task" section marks tasks done (and schedules the next one for repeating tasks); and the generated schedule shows any time conflicts as warnings.
+**In the Streamlit app:** the task form now has a start time and a "Repeats" option; the task list can be filtered by pet and status and sorted by time or priority (with a "Showing X of Y tasks" count); a "Complete a Task" section marks tasks done (and schedules the next one for repeating tasks); and the generated schedule shows a red banner listing any time conflicts at the top (or a green "No time conflicts" message).
 
 ## 📸 Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+### Main features
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+- **Owner and pets:** enter your name and how many minutes you have today, then add as many pets as you like.
+- **Care tasks:** give each pet tasks with a duration, priority, start time, and whether they repeat (once, daily, or weekly).
+- **Sorting and filtering:** view tasks by pet and by status (to do / done), sorted by time or by priority.
+- **Recurring tasks:** marking a daily or weekly task complete automatically creates the next one.
+- **Daily plan:** PawPal+ picks the most important tasks that fit in your time, lists them in time order, and explains each choice.
+- **Conflict warnings:** if two planned tasks overlap, you get a clear warning at the top of the schedule.
+
+### How to run it
+
+```bash
+# 1. Set up once (see "Getting started" above)
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+# 2. Start the web app (opens in your browser, usually at http://localhost:8501)
+streamlit run app.py
+
+# Or run the command-line demo instead
+python main.py
+```
+
+### Step by step
+
+1. **Set up the owner.** At the top of the page, type your name and how many minutes you have for pet care today (for example, `60`).
+2. **Add your pets.** In **🐶 Add a Pet**, enter a name (for example, *Biscuit*), pick a species, and click **Add pet**. Repeat for each pet (for example, *Mochi* the cat). Each pet needs a different name.
+3. **Add care tasks.** In **📝 Add a Task**, pick a pet and enter a title, duration, priority, start time, and whether it repeats. For example:
+   - Biscuit: *Morning walk*, 30 min, high, 08:00, daily
+   - Mochi: *Give medicine*, 5 min, high, 08:15, once
+   - Mochi: *Play time*, 20 min, medium, 17:00, once
+4. **Review your tasks.** In **📋 Your Pets and Tasks**, use **Show pet** and **Show status** to narrow the list, and **Sort by** to switch between time order and priority order. The count at the bottom shows how many tasks match.
+5. **Generate today's schedule.** In **📅 Today's Schedule**, click **Generate schedule**. With the example tasks above, a red banner warns that *Morning walk* (08:00–08:30) overlaps with *Give medicine* (08:15). Below it you'll see the plan in time order and a "Why this plan" explanation showing what was added, what was skipped, and how much time was used.
+6. **Complete a task.** In **✅ Complete a Task**, pick Biscuit and *Morning walk*, then click **Mark complete**. Because it's a daily task, PawPal+ tells you the next one is due tomorrow, and it appears under **Show status → To do** with tomorrow's date.
+7. **Generate again.** Click **Generate schedule** again. The finished walk (and tomorrow's copy) are no longer in today's plan, so the conflict is gone and you'll see a green **No time conflicts** message.
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->

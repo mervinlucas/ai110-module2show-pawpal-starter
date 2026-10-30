@@ -101,20 +101,42 @@ st.subheader("📋 Your Pets and Tasks")
 if not owner.pets:
     st.info("No pets yet.")
 else:
-    col1, col2 = st.columns(2)
+    st.caption("Choose which tasks to see and how to order them. This only changes the view, not your tasks.")
+    col1, col2, col3 = st.columns(3)
     with col1:
-        pet_filter = st.selectbox("Show pet", ["All pets"] + [p.name for p in owner.pets])
+        pet_filter = st.selectbox(
+            "Show pet",
+            ["All pets"] + [p.name for p in owner.pets],
+            help="Only show tasks for one pet.",
+        )
     with col2:
-        status_filter = st.selectbox("Show status", ["All", "To do", "Done"])
+        status_filter = st.selectbox(
+            "Show status",
+            ["All", "To do", "Done"],
+            help="'To do' hides finished tasks. 'Done' shows only finished tasks.",
+        )
+    with col3:
+        sort_choice = st.radio(
+            "Sort by",
+            ["Time", "Priority"],
+            horizontal=True,
+            help="Time: earliest first (tasks with no time go last). Priority: high first, then shortest.",
+        )
 
     # Turn the status choice into the value filter_tasks expects (None means "any").
     completed_filter = {"All": None, "To do": False, "Done": True}[status_filter]
 
+    shown_count = 0
     for pet in owner.pets:
         if pet_filter != "All pets" and pet.name != pet_filter:
             continue
         st.markdown(f"**{pet.name}** ({pet.species})")
-        tasks = scheduler.sort_by_time(scheduler.filter_tasks(pet.name, completed_filter))
+        tasks = scheduler.filter_tasks(pet.name, completed_filter)
+        if sort_choice == "Time":
+            tasks = scheduler.sort_by_time(tasks)
+        else:
+            tasks = scheduler.sort_tasks(tasks)
+        shown_count += len(tasks)
         if tasks:
             st.table(
                 [
@@ -132,6 +154,8 @@ else:
             )
         else:
             st.caption("No matching tasks.")
+
+    st.caption(f"Showing {shown_count} of {len(owner.get_all_tasks())} tasks, sorted by {sort_choice.lower()}.")
 
 st.divider()
 
@@ -167,8 +191,24 @@ st.divider()
 
 # --- Build today's schedule ---
 st.subheader("📅 Today's Schedule")
+st.caption(
+    "Picks today's unfinished tasks by priority until your available time runs out, "
+    "then lists them in time order and checks for overlapping times."
+)
 if st.button("Generate schedule"):
     plan = scheduler.generate_plan()
+
+    # Show conflicts first so they're the first thing the owner sees.
+    conflicts = scheduler.detect_conflicts()
+    if conflicts:
+        st.error(
+            f"⚠️ **{len(conflicts)} time conflict(s) in today's plan.** "
+            "These tasks overlap, so you may want to change one of their start times:"
+        )
+        for warning in conflicts:
+            st.warning(warning)
+    elif plan:
+        st.success("✅ No time conflicts. Every task in the plan has its own time slot.")
 
     if plan:
         st.table(
@@ -184,9 +224,6 @@ if st.button("Generate schedule"):
         )
     else:
         st.info("Nothing fits in today's plan yet. Add tasks or increase your available time.")
-
-    for warning in scheduler.detect_conflicts():
-        st.warning(f"⚠️ Time conflict: {warning}")
 
     st.markdown("**Why this plan:**")
     st.text(scheduler.explain_plan())
